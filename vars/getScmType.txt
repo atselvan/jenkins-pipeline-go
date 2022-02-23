@@ -1,0 +1,35 @@
+<h1>Get SCM Type</h1>
+
+<p>
+    Lets you quickly get the type of SCM used in the job definition.
+
+
+
+    For example, if you have a Multibranch Pipeline job, it can checkout from SVN or BitBucket.
+
+    Then you can checkout the code in the pipeline via the shorthand <b>checkout scm</b>.
+
+    If you want to know what SCM was used for this checkout, you can use this method.
+</p>
+
+<h2>How to use</h2>
+
+<p>
+    Below is an example how you can use the change dsl method from a Jenkins pipeline.
+</p>
+
+<p>
+<pre style="background:rgba(238,238,238,0.92);color:#000"><span style="font-weight:700">@Library</span>([<span style="color:#093">'stpl-pipeline-core'</span>]) _
+
+node {
+    stage(<span style="color:#093">'Checkout'</span>) {
+        checkout scm
+    }
+
+    <span style="font-weight:700">String</span> scmType <span style="color:#00f">=</span> <span style="color:#093">''</span>
+    stage(<span style="color:#093">'Check SCM Type'</span>) {
+        scmType <span style="color:#00f">=</span> getScmType(scm)
+    }
+}
+</pre>
+</p>

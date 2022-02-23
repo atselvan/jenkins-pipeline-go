@@ -1,0 +1,69 @@
+<h1>Upload Nexus Artifacts</h1>
+
+<p>
+    This is a wrapper around the official plugin from Sonatype: https://wiki.jenkins.io/display/JENKINS/Nexus+Artifact+Uploader.
+
+    It allows you to upload an artifact to Nexus (version 2 or version 3) with additional files, without having a build tool such as maven.
+
+
+
+</p>
+
+<h2>How to use</h2>
+
+<p>
+    Below is an example how you can use the dsl method from a Jenkins pipeline.
+</p>
+
+<p>
+
+node {
+    <span style="font-weight:700">NexusArtifact</span>[] artifacts
+    <span style="font-weight:700">def</span> zipName <span style="color:#00f">=</span> <span style="color:#093">'validate-pom.zip'</span>
+    <span style="font-weight:700">def</span> zipName2 <span style="color:#00f">=</span> <span style="color:#093">'validate-pom2.zip'</span>
+
+    stage(<span style="color:#093">'Clean'</span>) {
+        deleteDir()
+    }
+
+    stage(<span style="color:#093">'Prepare Artifacts'</span>) {
+        writeFile <span style="color:#6782d3">encoding</span>: <span style="color:#093">'UTF-8'</span>, <span style="color:#6782d3">file</span>: <span style="color:#093">'test.txt'</span>, <span style="color:#6782d3">text</span>: <span style="color:#093">'Hello World'</span>
+        zip <span style="color:#6782d3">archive</span>: <span style="color:#9700cc">true</span>, <span style="color:#6782d3">dir</span>: <span style="color:#093">''</span>, <span style="color:#6782d3">glob</span>: <span style="color:#093">'test.txt'</span>, <span style="color:#6782d3">zipFile</span>: zipName
+
+        writeFile <span style="color:#6782d3">encoding</span>: <span style="color:#093">'UTF-8'</span>, <span style="color:#6782d3">file</span>: <span style="color:#093">'test2.txt'</span>, <span style="color:#6782d3">text</span>: <span style="color:#093">'Hello World'</span>
+        zip <span style="color:#6782d3">archive</span>: <span style="color:#9700cc">true</span>, <span style="color:#6782d3">dir</span>: <span style="color:#093">''</span>, <span style="color:#6782d3">glob</span>: <span style="color:#093">'test2.txt'</span>, <span style="color:#6782d3">zipFile</span>: zipName2
+    }
+
+    stage(<span style="color:#093">'Prepare Upload'</span>) {
+        <span style="font-weight:700">NexusArtifact</span> artifact <span style="color:#00f">=</span> <span style="color:#00f">new</span> <span style="font-weight:700">NexusArtifact</span>()
+        artifact<span style="color:#00f">.</span>artifactId <span style="color:#00f">=</span> <span style="color:#093">'pom-validator-test'</span>
+        artifact<span style="color:#00f">.</span>classifier <span style="color:#00f">=</span> <span style="color:#093">''</span>
+        artifact<span style="color:#00f">.</span>file <span style="color:#00f">=</span> zipName
+        artifact<span style="color:#00f">.</span>type <span style="color:#00f">=</span> <span style="color:#093">'zip'</span>
+
+        <span style="font-weight:700">NexusArtifact</span> artifact2 <span style="color:#00f">=</span> <span style="color:#00f">new</span> <span style="font-weight:700">NexusArtifact</span>()
+        artifact2<span style="color:#00f">.</span>artifactId <span style="color:#00f">=</span> artifact<span style="color:#00f">.</span>artifactId
+        artifact2<span style="color:#00f">.</span>classifier <span style="color:#00f">=</span> <span style="color:#093">'zip2'</span>
+        artifact2<span style="color:#00f">.</span>file <span style="color:#00f">=</span> zipName2
+        artifact2<span style="color:#00f">.</span>type <span style="color:#00f">=</span> <span style="color:#093">'zip'</span>
+
+        artifacts <span style="color:#00f">=</span> [artifact, artifact2]
+    }
+
+    stage(<span style="color:#093">'Upload'</span>) {
+        uploadNexusArtifacts(
+                    <span style="color:#093">'localhost:8081/nexus'</span>,
+                    <span style="color:#093">'repoName'</span>,
+                    <span style="color:#093">'com.example.test'</span>,
+                    <span style="color:#093">'1.1.0'</span>,
+                    artifacts,
+                    <span style="color:#093">'userAccount'</span>
+                )
+    }
+
+    stage(<span style="color:#093">'Cleanup Workspace'</span>) {
+        step([$<span style="color:#6782d3">class</span>: <span style="color:#093">'WsCleanup'</span>, <span style="color:#6782d3">notFailBuild</span>: <span style="color:#9700cc">true</span>])
+    }
+}
+</pre>
+</p>
